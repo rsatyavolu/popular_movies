@@ -31,7 +31,6 @@ import java.util.Iterator;
  */
 public class MovieDetailActivityFragment extends Fragment implements OnTaskCompleted {
 
-    private static final String MOVIE_DETAILS = "Movie Details";
     private static final String MOVIE_DETAILS_URL = "http://api.themoviedb.org/3/movie/";
     private static final String MOVIE_VIDEOS_URL_PREFIX = "http://api.themoviedb.org/3/movie/";
     private static final String MOVIE_VIDEOS_URL_POSTFIX = "/videos";
@@ -57,9 +56,6 @@ public class MovieDetailActivityFragment extends Fragment implements OnTaskCompl
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
-
-        android.support.v7.app.ActionBar ab = ((AppCompatActivity)getActivity()).getSupportActionBar();
-        ab.setTitle(MOVIE_DETAILS);
 
         title = (TextView) rootView.findViewById(R.id.movie_title);
         poster = (ImageView) rootView.findViewById(R.id.movie_poster);

@@ -11,9 +11,7 @@ public class MovieDetailActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setLogo(R.drawable.moviecam_icon);
-        getSupportActionBar().setDisplayUseLogoEnabled(true);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_movie_detail);
     }
 
