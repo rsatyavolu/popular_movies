@@ -1,7 +1,6 @@
 package com.rsatyavolu.nanodegree.popularmovies;
 
 import android.net.Uri;
-import android.provider.MediaStore;
 
 import com.rsatyavolu.nanodegree.popularmovies.model.MovieItemModel;
 import com.rsatyavolu.nanodegree.popularmovies.model.VideoModel;

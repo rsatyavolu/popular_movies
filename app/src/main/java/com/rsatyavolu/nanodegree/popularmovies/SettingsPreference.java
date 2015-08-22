@@ -1,6 +1,5 @@
 package com.rsatyavolu.nanodegree.popularmovies;
 
-import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
