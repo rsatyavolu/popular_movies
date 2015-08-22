@@ -6,8 +6,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.rsatyavolu.nanodegree.popularmovies.model.MovieItemModel;
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity implements MainActivityFragment.Callback {
+
+    private boolean mTwoPane;
+    public static final String SELECTED_MOVIE = "selected_movie";
+    private static final String DETAILFRAGMENT_TAG = "DFTAG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +24,22 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayUseLogoEnabled(true);
 
         setContentView(R.layout.activity_main);
+        if(findViewById(R.id.movie_detail_container) != null) {
+            mTwoPane = true;
+
+            if(savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction().
+                        add(R.id.movie_detail_container, new MovieDetailActivityFragment())
+                        .commit();
+            }
+
+        } else {
+            mTwoPane = false;
+        }
+
+        //MovieDetailActivityFragment detailFragment =  ((MovieDetailActivityFragment)getSupportFragmentManager()
+                //.findFragmentById(R.id.movie_detail_container));
+        //detailFragment
     }
 
 
@@ -38,5 +60,32 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onItemSelected(MovieItemModel selectedMovie) {
+        if (mTwoPane) {
+            // In two-pane mode, show the detail view in this activity by
+            // adding or replacing the detail fragment using a
+            // fragment transaction.
+            Bundle args = new Bundle();
+            args.putSerializable(SELECTED_MOVIE, selectedMovie);
+
+            MovieDetailActivityFragment fragment = new MovieDetailActivityFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.movie_detail_container, fragment, DETAILFRAGMENT_TAG)
+                    .commit();
+        } else {
+            Intent explicitIntent = new Intent(this, MovieDetailActivity.class);
+
+            Bundle b = new Bundle();
+            b.putSerializable(SELECTED_MOVIE, selectedMovie);
+
+            explicitIntent.putExtras(b);
+            startActivity(explicitIntent);
+        }
+
     }
 }

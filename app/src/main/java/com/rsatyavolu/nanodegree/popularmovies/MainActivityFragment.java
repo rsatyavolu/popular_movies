@@ -2,6 +2,7 @@ package com.rsatyavolu.nanodegree.popularmovies;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -34,6 +35,10 @@ public class MainActivityFragment extends Fragment {
 
     private MovieIconViewAdapter movieListAdapter;
 
+    public interface Callback {
+        public void onItemSelected(MovieItemModel dateUri);
+    }
+
     public MainActivityFragment() {
     }
 
@@ -48,14 +53,11 @@ public class MainActivityFragment extends Fragment {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent explicitIntent = new Intent(getActivity(), MovieDetailActivity.class);
-
-                Bundle b = new Bundle();
-                b.putSerializable(SELECTED_MOVIE, movieListAdapter.getItem(position));
-
-                explicitIntent.putExtras(b);
-                startActivity(explicitIntent);
-
+                if (parent.getItemAtPosition(position) != null) {
+                    ((Callback) getActivity())
+                            .onItemSelected(movieListAdapter.getItem(position)
+                            );
+                }
             }
         });
 

@@ -7,6 +7,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
+import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +39,9 @@ public class MovieDetailActivityFragment extends Fragment implements OnTaskCompl
     private static final String MOVIE_VIDEOS_URL_POSTFIX = "/videos";
 
     private static final String ERROR_STRING = "Unable to connect and retrive movie information.";
+
+    private static final int DETAIL_LOADER = 0;
+    public static final String SELECTED_MOVIE = "selected_movie";
 
     TextView title;
     ImageView poster;
@@ -67,17 +73,26 @@ public class MovieDetailActivityFragment extends Fragment implements OnTaskCompl
         movieTrailerAdapter = new MovieTrailerViewAdapter(getActivity());
         dbHelper = new MovieDbHelper(getActivity());
 
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            selectedMovie = (MovieItemModel) arguments.getSerializable(SELECTED_MOVIE);
+        }
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         PreferenceManager.setDefaultValues(getActivity(), R.xml.pref_settings, false);
 
         apiToken = prefs.getString(getString(R.string.pref_api_token_key), "");
 
+
         final Intent intent = getActivity().getIntent();
-
-        if(intent != null && intent.getExtras() != null) {
+        if(intent != null) {
             Bundle b = intent.getExtras();
-            MovieItemModel selectedMovie = (MovieItemModel)b.getSerializable(MainActivityFragment.SELECTED_MOVIE);
+            if(b != null) {
+                selectedMovie = (MovieItemModel) b.getSerializable(MainActivityFragment.SELECTED_MOVIE);
+            }
+        }
 
+        if(selectedMovie != null) {
             GetMovieDetailsTask movieDetailsTask = new GetMovieDetailsTask(this);
             movieDetailsTask.execute(MOVIE_DETAILS_URL + String.valueOf(selectedMovie.getId()), apiToken);
         }
