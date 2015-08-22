@@ -21,7 +21,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivityFragment extends Fragment {
@@ -31,8 +33,10 @@ public class MainActivityFragment extends Fragment {
     public static final String SELECTED_MOVIE = "selected_movie";
     private static final String DISCOVER_MOVIES_URL = "http://api.themoviedb.org/3/discover/movie";
     private static final String ERROR_STRING = "Unable to connect and retrive movies. Please verify your \"license key\" in settings.";
+    private static final String MOVIE_SEARCH_RESULTS = "movie_list";
 
     private MovieIconViewAdapter movieListAdapter;
+    private List<MovieItemModel> data;
 
     public interface Callback {
         public void onItemSelected(MovieItemModel dateUri);
@@ -60,7 +64,11 @@ public class MainActivityFragment extends Fragment {
             }
         });
 
-        ArrayList<MovieItemModel> data = new ArrayList<MovieItemModel>();
+        if(savedInstanceState != null) {
+            data = (List<MovieItemModel>) savedInstanceState.getSerializable(MOVIE_SEARCH_RESULTS);
+        } else {
+            data = new ArrayList<MovieItemModel>();
+        }
 
         movieListAdapter = new MovieIconViewAdapter(getActivity(), data);
         gridView.setAdapter(movieListAdapter);
@@ -68,30 +76,29 @@ public class MainActivityFragment extends Fragment {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         PreferenceManager.setDefaultValues(getActivity(), R.xml.pref_settings, false);
         String apiToken = prefs.getString(getString(R.string.pref_api_token_key), "");
+        String sortOption = prefs.getString(getString(R.string.pref_sort_key), "");
 
         if(apiToken.length() <= 25) {
             Intent settings = new Intent(getActivity(), SettingsActivity.class);
             startActivity(settings);
         }
 
+        if(data.size() == 0) {
+            DiscoverMoviesTask discoverMoviesTask = new DiscoverMoviesTask();
+            discoverMoviesTask.execute(DISCOVER_MOVIES_URL, apiToken, sortOption);
+        }
+
         return rootView;
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        PreferenceManager.setDefaultValues(getActivity(), R.xml.pref_settings, false);
-        String apiToken = prefs.getString(getString(R.string.pref_api_token_key), "");
-        String sortOption = prefs.getString(getString(R.string.pref_sort_key), "");
-
-        if(apiToken.length() > 25) {
-            movieListAdapter.clearContent();
-            DiscoverMoviesTask discoverMoviesTask = new DiscoverMoviesTask();
-            discoverMoviesTask.execute(DISCOVER_MOVIES_URL, apiToken, sortOption);
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(movieListAdapter != null) {
+            outState.putSerializable(MOVIE_SEARCH_RESULTS, (Serializable) movieListAdapter.getMovieList());
         }
     }
+
 
     class DiscoverMoviesTask extends AsyncTask<String, Void, String> {
 

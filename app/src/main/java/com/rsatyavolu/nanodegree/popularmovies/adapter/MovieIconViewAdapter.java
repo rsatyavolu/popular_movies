@@ -48,22 +48,9 @@ public class MovieIconViewAdapter extends BaseAdapter {
         return 0;
     }
 
-    /*
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ImageView imageView;
-        if (convertView == null) {
-            // if it's not recycled, initialize some attributes
-            imageView = new ImageView(context);
-        } else {
-            imageView = (ImageView) convertView;
-        }
-        String iconUrl = movieModels.get(position).getIconUrl();
-        Picasso.with(context).load(iconUrl).into(imageView);
-
-        return imageView;
+    public List<MovieItemModel> getMovieList() {
+        return movieModels;
     }
-    */
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
