@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +24,7 @@ import com.rsatyavolu.nanodegree.popularmovies.model.VideoModel;
 import com.squareup.picasso.Picasso;
 
 import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -36,8 +38,8 @@ public class MovieDetailActivityFragment extends Fragment implements OnTaskCompl
 
     private static final String ERROR_STRING = "Unable to connect and retrive movie information.";
 
-    private static final int DETAIL_LOADER = 0;
-    public static final String SELECTED_MOVIE = "selected_movie";
+    private static final String SELECTED_MOVIE_ID = "selected_movie_id";
+    private static final String SELECTED_MOVIE = "selected_movie";
 
     TextView title;
     ImageView poster;
@@ -45,6 +47,10 @@ public class MovieDetailActivityFragment extends Fragment implements OnTaskCompl
     TextView year;
     TextView length;
     TextView date;
+    LinearLayout trailerList;
+    View horizontalSeperator;
+    TextView trailersTitle;
+
     private MovieTrailerViewAdapter movieTrailerAdapter;
     private MovieItemModel selectedMovie;
     private Switch favoriteSwitch;
@@ -66,35 +72,25 @@ public class MovieDetailActivityFragment extends Fragment implements OnTaskCompl
         length = (TextView) rootView.findViewById(R.id.movie_length);
         date = (TextView) rootView.findViewById(R.id.movie_release_date);
 
-        movieTrailerAdapter = new MovieTrailerViewAdapter(getActivity());
-        dbHelper = new MovieDbHelper(getActivity());
+        favoriteSwitch = (Switch)rootView.findViewById(R.id.favorite);
 
-        Bundle arguments = getArguments();
-        if (arguments != null) {
-            selectedMovie = (MovieItemModel) arguments.getSerializable(SELECTED_MOVIE);
-        }
+        horizontalSeperator = rootView.findViewById(R.id.horizontal_seperator);
+        trailersTitle = (TextView)rootView.findViewById(R.id.trailers_title);
+        trailerList = (LinearLayout) rootView.findViewById(R.id.movie_trailers);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         PreferenceManager.setDefaultValues(getActivity(), R.xml.pref_settings, false);
 
         apiToken = prefs.getString(getString(R.string.pref_api_token_key), "");
 
+        String selectedMovieId = null;
 
-        final Intent intent = getActivity().getIntent();
-        if(intent != null) {
-            Bundle b = intent.getExtras();
-            if(b != null) {
-                selectedMovie = (MovieItemModel) b.getSerializable(MainActivityFragment.SELECTED_MOVIE);
-            }
-        }
+        movieTrailerAdapter = new MovieTrailerViewAdapter(getActivity(), trailerList);
+        dbHelper = new MovieDbHelper(getActivity());
 
-        if(selectedMovie != null) {
-            GetMovieDetailsTask movieDetailsTask = new GetMovieDetailsTask(this);
-            movieDetailsTask.execute(MOVIE_DETAILS_URL + String.valueOf(selectedMovie.getId()), apiToken);
-        }
-
-        favoriteSwitch = (Switch)rootView.findViewById(R.id.favorite);
         favoriteSwitch.setVisibility(View.INVISIBLE);
+        horizontalSeperator.setVisibility(View.INVISIBLE);
+        trailersTitle.setVisibility(View.INVISIBLE);
         favoriteSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -102,14 +98,56 @@ public class MovieDetailActivityFragment extends Fragment implements OnTaskCompl
             }
         });
 
+        final Bundle arguments = getArguments();
+        if (arguments != null) {
+            selectedMovieId = arguments.getString(SELECTED_MOVIE_ID);
+        }
+
+        final Intent intent = getActivity().getIntent();
+        if(intent != null) {
+            Bundle b = intent.getExtras();
+            if(b != null) {
+                selectedMovieId = b.getString(SELECTED_MOVIE_ID);
+            }
+        }
+
+        if(savedInstanceState != null) {
+            selectedMovie = (MovieItemModel)savedInstanceState.getSerializable(SELECTED_MOVIE);
+            showMovieDetails();
+        } else if(selectedMovie == null && selectedMovieId != null) {
+            GetMovieDetailsTask movieDetailsTask = new GetMovieDetailsTask(this);
+            movieDetailsTask.execute(MOVIE_DETAILS_URL + selectedMovieId, apiToken);
+        } else {
+            title.setText("Click on a movie to view details.");
+        }
+
         return rootView;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(selectedMovie != null) {
+            outState.putSerializable(SELECTED_MOVIE, selectedMovie);
+        }
     }
 
     @Override
     public void showMovieInfo(Object obj) {
         selectedMovie = (MovieItemModel)obj;
+        showMovieDetails();
+    }
 
+    private void showMovieDetails() {
         favoriteSwitch.setVisibility(View.VISIBLE);
+        horizontalSeperator.setVisibility(View.VISIBLE);
+        trailersTitle.setVisibility(View.VISIBLE);
 
         title.setText(selectedMovie.getTitle());
         year.setText(selectedMovie.getReleaseDate().substring(0, 4));
@@ -129,8 +167,16 @@ public class MovieDetailActivityFragment extends Fragment implements OnTaskCompl
             selectedMovie.setFavorite(favorite);
         }
 
-        GetMovieTrailersTask trailersTask = new GetMovieTrailersTask();
-        trailersTask.execute(MOVIE_VIDEOS_URL_PREFIX + String.valueOf(selectedMovie.getId()) + MOVIE_VIDEOS_URL_POSTFIX, apiToken);
+        if(selectedMovie.getTrailers() == null || selectedMovie.getTrailers().size() == 0) {
+            GetMovieTrailersTask trailersTask = new GetMovieTrailersTask();
+            trailersTask.execute(MOVIE_VIDEOS_URL_PREFIX + String.valueOf(selectedMovie.getId()) + MOVIE_VIDEOS_URL_POSTFIX, apiToken);
+        } else {
+            Iterator<VideoModel> itr = selectedMovie.getTrailers().iterator();
+            while (itr.hasNext()) {
+                movieTrailerAdapter.addTrailerToView(itr.next());
+            }
+
+        }
     }
 
     class GetMovieTrailersTask extends AsyncTask<String, Void, String> {
@@ -151,7 +197,9 @@ public class MovieDetailActivityFragment extends Fragment implements OnTaskCompl
                 Toast.makeText(getActivity(), ERROR_STRING, Toast.LENGTH_LONG).show();
                 return;
             }
-            Iterator<VideoModel> itr = MovieDatabaseUtility.extractVideoModels(jsonString).iterator();
+            List<VideoModel> trailers = MovieDatabaseUtility.extractVideoModels(jsonString);
+            selectedMovie.setTrailers(trailers);
+            Iterator<VideoModel> itr = trailers.iterator();
             while (itr.hasNext()) {
                 movieTrailerAdapter.addTrailerToView(itr.next());
             }

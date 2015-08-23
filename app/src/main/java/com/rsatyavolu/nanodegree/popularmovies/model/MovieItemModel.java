@@ -1,7 +1,5 @@
 package com.rsatyavolu.nanodegree.popularmovies.model;
 
-import android.util.Log;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +20,11 @@ public class MovieItemModel implements Serializable {
     private int id;
     private String releaseDate;
     private int runtime;
+
+    public void setTrailers(List<VideoModel> trailers) {
+        this.trailers = trailers;
+    }
+
     private List<VideoModel> trailers = new ArrayList<VideoModel>();
     private String favorite;
 
@@ -62,7 +65,6 @@ public class MovieItemModel implements Serializable {
     }
 
     public String getLargeIconUrl() {
-        Log.d("MyClass", POSTER_BASE_URL + POSTER_LARGE_SIZE + this.iconUrl);
         return POSTER_BASE_URL + POSTER_LARGE_SIZE + this.iconUrl;
     }
 

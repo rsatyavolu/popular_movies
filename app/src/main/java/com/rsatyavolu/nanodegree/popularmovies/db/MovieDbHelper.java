@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import com.rsatyavolu.nanodegree.popularmovies.model.MovieItemModel;
 
@@ -68,7 +67,6 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 MovieDbContract.MovieEntry.TABLE_NAME,
                 null,
                 values);
-        Log.d("MyClass", String.valueOf(newRowId) + " - " + String.valueOf(movie.getId()) + " - " + movie.getTitle());
         db.close();
     }
 
@@ -95,7 +93,6 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 null
         );
         boolean movieExists = cursor.moveToFirst();
-        Log.d("MyClass", String.valueOf(movieExists) + " - " + String.valueOf(movie.getId()) + " - " + movie.getTitle());
         if(movieExists) {
             String favorite = cursor.getString(cursor.getColumnIndex(MovieDbContract.MovieEntry.COLUMN_MOVIE_FAVORITE));
             db.close();

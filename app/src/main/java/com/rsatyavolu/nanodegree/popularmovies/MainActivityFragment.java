@@ -81,6 +81,8 @@ public class MainActivityFragment extends Fragment {
         if(apiToken.length() <= 25) {
             Intent settings = new Intent(getActivity(), SettingsActivity.class);
             startActivity(settings);
+
+            return rootView;
         }
 
         if(data.size() == 0) {

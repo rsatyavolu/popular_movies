@@ -1,6 +1,5 @@
 package com.rsatyavolu.nanodegree.popularmovies.adapter;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -19,17 +18,16 @@ import com.rsatyavolu.nanodegree.popularmovies.model.VideoModel;
  */
 public class MovieTrailerViewAdapter {
 
+    private LinearLayout trailerList;
     private Context context;
 
-    public MovieTrailerViewAdapter(Context context) {
+    public MovieTrailerViewAdapter(Context context, LinearLayout trailerList) {
         this.context = context;
+        this.trailerList = trailerList;
     }
 
     public void addTrailerToView(VideoModel trailer) {
         if(trailer.getType().equals(VideoModel.TRAILER_VIDEO_TYPE)) {
-            LinearLayout trailerList = (LinearLayout) ((Activity)context).findViewById(R.id.movie_trailers);
-
-
             View view = LayoutInflater.from(context).inflate(R.layout.trailer_list_item, null);
             ImageView videoIcon = (ImageView) view.findViewById(R.id.trailer_play_icon);
             TextView trailerName = (TextView) view.findViewById(R.id.trailer_name);

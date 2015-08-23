@@ -12,7 +12,7 @@ import com.rsatyavolu.nanodegree.popularmovies.model.MovieItemModel;
 public class MainActivity extends AppCompatActivity implements MainActivityFragment.Callback {
 
     private boolean mTwoPane;
-    public static final String SELECTED_MOVIE = "selected_movie";
+    public static final String SELECTED_MOVIE_ID = "selected_movie_id";
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
 
     @Override
@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
             // adding or replacing the detail fragment using a
             // fragment transaction.
             Bundle args = new Bundle();
-            args.putSerializable(SELECTED_MOVIE, selectedMovie);
+            args.putString(SELECTED_MOVIE_ID, String.valueOf(selectedMovie.getId()));
 
             MovieDetailActivityFragment fragment = new MovieDetailActivityFragment();
             fragment.setArguments(args);
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
             Intent explicitIntent = new Intent(this, MovieDetailActivity.class);
 
             Bundle b = new Bundle();
-            b.putSerializable(SELECTED_MOVIE, selectedMovie);
+            b.putString(SELECTED_MOVIE_ID, String.valueOf(selectedMovie.getId()));
 
             explicitIntent.putExtras(b);
             startActivity(explicitIntent);
